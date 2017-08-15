@@ -103,4 +103,4 @@ stopImplicitCluster2 <- function() {
 stopImplicitCluster2()
 proc.time()-t
 
-glimpse(isodense)
+glimpse(isodens)
