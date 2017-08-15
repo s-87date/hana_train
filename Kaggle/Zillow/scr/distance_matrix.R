@@ -48,7 +48,7 @@ gc(); gc()
 registerDoParallel(detectCores()-1)
 
 t<-proc.time()
-isolation <-  foreach(i=1:nrow(latlng[c(1:5),]), .combine="rbind") %dopar% {
+isolation <-  foreach(i=1:nrow(latlng), .combine="rbind") %dopar% {
   id.a <- latlng[i,]$parcelid
   lat.a <- latlng[i,]$latitude
   lng.a <- latlng[i,]$longitude
