@@ -1,5 +1,5 @@
 # set working path
-setwd("~/hana_train/Kaggle/Zillow")
+setwd("~/workspace/hana_train/Kaggle/Zillow")
 getwd()
 
 # lib
@@ -8,6 +8,10 @@ library(dplyr)
 library(tidyr)
 library(magrittr)
 library(doParallel)
+library(foreach)
+library(utils)
+library(iterators)
+library(tcltk)
 
 # load dat
 properties <- read_delim('input/properties_2016.csv',',')
@@ -44,11 +48,27 @@ gc(); gc()
 # (lat.range <- abs(lat.min.max[1]-lat.min.max[2]))
 # (lng.range <- abs(lng.min.max[1]-lng.min.max[2]))
 
-# doParallel
-registerDoParallel(detectCores()-1)
+# progress bar
+f <- function(){
+  pb <- txtProgressBar(min=1, max=n-1,style=3)
+  count <- 0
+  function(...) {
+    count <<- count + length(list(...)) - 1
+    setTxtProgressBar(pb,count)
+    flush.console()
+    c(...)
+  }
+}
 
+# doParallel
+cores = detectCores(logical=FALSE) # logical=TRUEでthread数
+cluster = makeCluster(cores, type='PSOCK')
+registerDoParallel(cluster)
+# registerDoParallel(detectCores()-4)
+
+# 2.0GHz*6cores 1:30で175sec つまり全部で200days
 t<-proc.time()
-isolation <-  foreach(i=1:nrow(latlng), .combine="rbind") %dopar% {
+isodens <-  foreach(i=seq(30), .combine="rbind", .packages="dplyr") %dopar% {
   id.a <- latlng[i,]$parcelid
   lat.a <- latlng[i,]$latitude
   lng.a <- latlng[i,]$longitude
@@ -62,16 +82,6 @@ isolation <-  foreach(i=1:nrow(latlng), .combine="rbind") %dopar% {
       isolation25 <<- .[c(1:25),] %>% 
         dplyr::summarise(isolation25=sum(dist)) %>% 
         as.numeric(.)
-      isolation125 <<- .[c(1:125),] %>% 
-        dplyr::summarise(isolation125=sum(dist)) %>% 
-        as.numeric(.)
-      isolation625 <<- .[c(1:625),] %>% 
-        dplyr::summarise(isolation625=sum(dist)) %>% 
-        as.numeric(.)
-      density10 <<- 
-        dplyr::filter(., dist <= 10) %>% 
-        dplyr::summarise(density10=n()) %>% 
-        as.numeric(.)
       density100 <<- 
         dplyr::filter(., dist <= 100) %>% 
         dplyr::summarise(density100=n()) %>% 
@@ -80,17 +90,15 @@ isolation <-  foreach(i=1:nrow(latlng), .combine="rbind") %dopar% {
         dplyr::filter(., dist <= 1000) %>% 
         dplyr::summarise(density1000=n()) %>% 
         as.numeric(.)
-      density10000 <<- 
-        dplyr::filter(., dist <= 10000) %>% 
-        dplyr::summarise(density10000=n()) %>% 
-        as.numeric(.)
     }
-  c(id.a, isolation5, isolation25, isolation125, isolation625, density10, density100, density1000, density10000)
+  c(id.a, isolation5, isolation25, density100, density1000)
 }
+# isolationX: 直近X棟との総距離
+# densityX: Xm以内の距離にある棟数
 isodens %<>% as.data.frame(.) %>% 
   dplyr::rename(parcelid=V1, 
-                isolation5=V2, isolation25=V3, isolation125=V4, isolation625=V5,
-                dencity10=V6, density100=V7, density1000=V8, density10000=V9)
+                isolation5=V2, isolation25=V3,
+                density100=V4, density1000=V5)
 # stopImplicitCluster2
 stopImplicitCluster2 <- function() {
   options <- doParallel:::.options
@@ -104,3 +112,4 @@ stopImplicitCluster2()
 proc.time()-t
 
 glimpse(isodens)
+saveRDS(isodens,"output/isodens.rds")
