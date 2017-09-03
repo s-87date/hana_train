@@ -14,7 +14,7 @@ library(iterators)
 library(tcltk)
 
 # load dat
-properties <- read_delim('input/properties_2016.csv',',')
+properties <- read_csv('input/properties_2016.csv')
 
 # select col
 latlng <- properties %>% 
@@ -56,19 +56,20 @@ f <- function(){
     count <<- count + length(list(...)) - 1
     setTxtProgressBar(pb,count)
     flush.console()
-    c(...)
+    rbind(...)
   }
 }
 
 # doParallel
 cores = detectCores(logical=FALSE) # logical=TRUEでthread数
-cluster = makeCluster(cores, type='PSOCK')
+cluster = makeCluster(cores)
 registerDoParallel(cluster)
 # registerDoParallel(detectCores()-4)
 
 # 2.0GHz*6cores 1:30で175sec つまり全部で200days
 t<-proc.time()
-isodens <-  foreach(i=seq(30), .combine="rbind", .packages="dplyr") %dopar% {
+n <- 30
+isodens <-  foreach(i=seq(n), .combine=f(), .packages="dplyr") %dopar% {
   id.a <- latlng[i,]$parcelid
   lat.a <- latlng[i,]$latitude
   lng.a <- latlng[i,]$longitude
