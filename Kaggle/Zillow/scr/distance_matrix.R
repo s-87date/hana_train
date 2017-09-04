@@ -1,5 +1,6 @@
 # set working path
 setwd("~/workspace/hana_train/Kaggle/Zillow")
+setwd("~/work/hana_train/Kaggle/Zillow")
 getwd()
 
 # lib
@@ -49,16 +50,16 @@ gc(); gc()
 # (lng.range <- abs(lng.min.max[1]-lng.min.max[2]))
 
 # progress bar
-f <- function(){
-  pb <- txtProgressBar(min=1, max=n-1,style=3)
-  count <- 0
-  function(...) {
-    count <<- count + length(list(...)) - 1
-    setTxtProgressBar(pb,count)
-    flush.console()
-    rbind(...)
-  }
-}
+# f <- function(){
+#   pb <- txtProgressBar(min=1, max=n-1,style=3)
+#   count <- 0
+#   function(...) {
+#     count <<- count + length(list(...)) - 1
+#     setTxtProgressBar(pb,count)
+#     flush.console()
+#     rbind(...)
+#   }
+# }
 
 # doParallel
 cores = detectCores(logical=FALSE) # logical=TRUEでthread数
@@ -69,10 +70,10 @@ registerDoParallel(cluster)
 # 2.0GHz*6cores 1:30で175sec つまり全部で200days
 t<-proc.time()
 n <- 30
-isodens <-  foreach(i=seq(n), .combine=f(), .packages="dplyr") %dopar% {
-  id.a <- latlng[i,]$parcelid
-  lat.a <- latlng[i,]$latitude
-  lng.a <- latlng[i,]$longitude
+isodens <-  foreach(r=iter(latlng,by="row"), .combine="rbind", .packages="dplyr") %dopar% {
+  id.a <- r$parcelid
+  lat.a <- r$latitude
+  lng.a <- r$longitude
   
   latlng[-i,] %>% 
     dplyr::mutate(dist=hubeny(lng.a, lat.a, longitude, latitude)) %>% 
