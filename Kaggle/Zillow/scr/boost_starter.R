@@ -14,11 +14,13 @@
 # 5. dogboost when?
 # 6. Vote if you like it!
 
+setwd("~/work/hana_train/Kaggle/Zillow/scr")
 require(catboost)
 require(data.table)
 require(caret)
 require(geosphere)
 require(stringr)
+require(dplyr)
 require(Metrics) # for MAE
 
 ### LOAD AND TWEAK DATA ###
@@ -182,7 +184,7 @@ result <- data.frame(cbind(p$parcelid, predictions, predictions, predictions, pr
 
 colnames(result) <- c("parcelid","201610","201611","201612","201710","201711","201712")
 
-write.csv(result, file = "cb-submission.csv", row.names = FALSE ) 
+write.csv(result, file = "../output/cb-submission.csv", row.names = FALSE ) 
 
 #   /\_/\
 #   >^.^<.---.

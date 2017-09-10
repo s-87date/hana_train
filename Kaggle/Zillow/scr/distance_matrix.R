@@ -13,6 +13,7 @@ library(foreach)
 library(utils)
 library(iterators)
 library(tcltk)
+library(geosphere)
 
 # load dat
 properties <- read_csv('input/properties_2016.csv')
@@ -24,18 +25,18 @@ latlng <- properties %>%
   na.omit() #Observations: 2,973,780
 glimpse(latlng)
 
-# hubeny formula
-pi = 3.1415926535
-p = 6378137
-hubeny <- function(ax,ay, bx,by){
-  xdif <- (ax - bx)*(pi/180) # x dif (経度の差) longitude
-  ydif <- (ay - by)*(pi/180) # y dif (緯度の差) latitude
-  deltax <- p*xdif*cos(ay*(pi/180)) # 経度の差に基づく東西距離(m)
-  deltay <- p*ydif           # 緯度の差に基づく南北距離(m)
-  sqrt(deltax^2 + deltay^2)  # Distance(m)
-}
-rm(properties)
-gc(); gc()
+# # hubeny formula
+# pi = 3.1415926535
+# p = 6378137
+# hubeny <- function(ax,ay, bx,by){
+#   xdif <- (ax - bx)*(pi/180) # x dif (経度の差) longitude
+#   ydif <- (ay - by)*(pi/180) # y dif (緯度の差) latitude
+#   deltax <- p*xdif*cos(ay*(pi/180)) # 経度の差に基づく東西距離(m)
+#   deltay <- p*ydif           # 緯度の差に基づく南北距離(m)
+#   sqrt(deltax^2 + deltay^2)  # Distance(m)
+# }
+# rm(properties)
+# gc(); gc()
 
 # id.pair <- latlng %>%
 #   dplyr::mutate(parcelid.a = parcelid, parcelid.b = parcelid) %>%
