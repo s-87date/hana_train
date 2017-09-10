@@ -1,5 +1,4 @@
 # set working path
-setwd("~/workspace/hana_train/Kaggle/Zillow")
 setwd("~/work/hana_train/Kaggle/Zillow")
 getwd()
 
@@ -68,40 +67,51 @@ cluster = makeCluster(cores)
 registerDoParallel(cluster)
 # registerDoParallel(detectCores()-4)
 
-# 2.0GHz*6cores 1:30で175sec つまり全部で200days
-t<-proc.time()
-n <- 30
-isodens <-  foreach(r=iter(latlng,by="row"), .combine="rbind", .packages="dplyr") %dopar% {
-  id.a <- r$parcelid
-  lat.a <- r$latitude
-  lng.a <- r$longitude
-  
-  latlng[-i,] %>% 
-    dplyr::mutate(dist=hubeny(lng.a, lat.a, longitude, latitude)) %>% 
-    dplyr::arrange(dist) %>% {
-      isolation5 <<- .[c(1:5),] %>% 
-        dplyr::summarise(isolation5=sum(dist)) %>% 
-        as.numeric(.)
-      isolation25 <<- .[c(1:25),] %>% 
-        dplyr::summarise(isolation25=sum(dist)) %>% 
-        as.numeric(.)
-      density100 <<- 
-        dplyr::filter(., dist <= 100) %>% 
-        dplyr::summarise(density100=n()) %>% 
-        as.numeric(.)
-      density1000 <<- 
-        dplyr::filter(., dist <= 1000) %>% 
-        dplyr::summarise(density1000=n()) %>% 
-        as.numeric(.)
-    }
-  c(id.a, isolation5, isolation25, density100, density1000)
-}
-# isolationX: 直近X棟との総距離
-# densityX: Xm以内の距離にある棟数
-isodens %<>% as.data.frame(.) %>% 
-  dplyr::rename(parcelid=V1, 
-                isolation5=V2, isolation25=V3,
-                density100=V4, density1000=V5)
+# t<-proc.time()
+# n <- 30
+# isodens <-  foreach(r=iter(latlng,by="row"), .combine="rbind", .packages="dplyr") %dopar% {
+#   id.a <- r$parcelid
+#   lat.a <- r$latitude
+#   lng.a <- r$longitude
+#   
+#   latlng[-i,] %>% 
+#     dplyr::mutate(dist=hubeny(lng.a, lat.a, longitude, latitude)) %>% 
+#     dplyr::arrange(dist) %>% {
+#       isolation5 <<- .[c(1:5),] %>% 
+#         dplyr::summarise(isolation5=sum(dist)) %>% 
+#         as.numeric(.)
+#       isolation25 <<- .[c(1:25),] %>% 
+#         dplyr::summarise(isolation25=sum(dist)) %>% 
+#         as.numeric(.)
+#       density100 <<- 
+#         dplyr::filter(., dist <= 100) %>% 
+#         dplyr::summarise(density100=n()) %>% 
+#         as.numeric(.)
+#       density1000 <<- 
+#         dplyr::filter(., dist <= 1000) %>% 
+#         dplyr::summarise(density1000=n()) %>% 
+#         as.numeric(.)
+#     }
+#   c(id.a, isolation5, isolation25, density100, density1000)
+# }
+# # isolationX: 直近X棟との総距離
+# # densityX: Xm以内の距離にある棟数
+# isodens %<>% as.data.frame(.) %>% 
+#   dplyr::rename(parcelid=V1, 
+#                 isolation5=V2, isolation25=V3,
+#                 density100=V4, density1000=V5)
+
+i1.latlng <- iter(latlng, by="row")
+isolation5 <- 
+  foreach(i1 = i1.latlng, .combine = "c", .packages = "doParallel") %dopar% {
+    i2.latlng <- iter(temp.latlng, by="row")
+    dist.v <- 
+      foreach(i2 = i2.latlng, .combine = "c", .packages = "geosphere") %dopar% {
+        distHaversine(c(i1$longitude,i1$latitude),c(i2$longitude,i2$latitude))
+      }
+    sum(sort(dist.v)[1:5])
+  }
+
 # stopImplicitCluster2
 stopImplicitCluster2 <- function() {
   options <- doParallel:::.options
@@ -113,6 +123,17 @@ stopImplicitCluster2 <- function() {
 }
 stopImplicitCluster2()
 proc.time()-t
+#### 1core ####
+# 1:10 -> 0.246
+# 1:100 -> 10.289
+# 1:1000 -> 927.181
+#### 4core ####
+# 1:10 -> -
+# 1:100 ->  2.248 
+# 1:1000 -> 162.515
+
+
+
 
 glimpse(isodens)
 saveRDS(isodens,"output/isodens.rds")
