@@ -28,6 +28,8 @@
 #' Let's look at the dataset:
 #' 
 #' ### Read in the data
+
+setwd("~/work/hana_train/Kaggle/Zillow/scr")
 ## ---- message=FALSE, warning=FALSE, results='hide'-----------------------
 library(data.table)
 library(dplyr)
