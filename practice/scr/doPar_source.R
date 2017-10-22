@@ -1,4 +1,43 @@
+library(foreach)
 library(doParallel)
+library(dplyr)
+
+# preparing df
+dat <- data.frame(a=seq(10000),b=seq(seq(10000)))
+
+# seq proc
+t <- proc.time()
+zero.10000 <- foreach(i=seq(nrow(dat)), .combine = c) %do% { 
+  zero <- dat[i,] %>% mutate(ab = a-b) %>% .$ab
+}
+sum(zero.10000); length(zero.10000)
+proc.time()-t # 22sec
+
+# pre-process for parallel computing
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+
+# doing prallel computing
+t <- proc.time()
+zero.10000 <- foreach(i=seq(nrow(dat)), .combine = c, .packages = "dplyr") %dopar% { 
+  zero <- dat[i,] %>% mutate(ab = a-b) %>% .$ab
+}
+sum(zero.10000); length(zero.10000)
+proc.time()-t # 12sec
+
+
+# stop parallel computing
+stopImplicitCluster2 <- function() {
+  options <- doParallel:::.options
+  if (exists(".revoDoParCluster", where = options) &&
+      !is.null(get(".revoDoParCluster", envir = options))) {
+    stopCluster(get(".revoDoParCluster", envir = options))
+    remove(".revoDoParCluster", envir = options)
+  }
+}
+stopImplicitCluster2()
+
+
 
 df <- data.frame(x=c(100,1000))
 
