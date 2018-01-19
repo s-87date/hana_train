@@ -26,6 +26,9 @@ sample_sub_processed %>% dplyr::distinct(store_id) %>% nrow() #must have 821 sto
 sample_sub_processed %>% dplyr::group_by(date) %>% dplyr::summarise(day_count=n()) %>% .$date #2017-04-23_2017-05-31
 sample_sub_processed %>% dplyr::group_by(date) %>% dplyr::summarise(day_count=n()) %>% dplyr::distinct(day_count)
 
+submission.required <- sample_sub_processed %>% 
+  dplyr::select(-store_type, -visitors)
+
 #=== load csv ===
 # =================
 store_id_relation <- readr::read_csv("../input/store_id_relation.csv")
@@ -47,12 +50,34 @@ air_reserve %>% glimpse() #92,378
 air_store_info %>% glimpse() #829
 hpg_store_info %>% glimpse() #4,690
 # =================
+View(air_visit_data)
 
-#=== JOIN air and hpg ===
-join_air_hpg <- dplyr::inner_join(store_id_relation, hpg_store_info, by=c("hpg_store_id"))
-join_air_hpg %>% glimpse() #63
+# Convert dttm to date
+# =======
+air_reserve_date <- air_reserve %>% 
+  dplyr::mutate(visit_date=as.Date(floor_date(visit_datetime, "day"))) %>% 
+  dplyr::group_by(air_store_id, visit_date) %>% 
+  dplyr::summarise(reserve_visitors=sum(reserve_visitors))
+air_reserve_date %>% glimpse()
 
+#=== JOIN featur to sub. ===
+air.vis.res <- 
+  dplyr::inner_join(air_reserve_date, air_visit_data, by=c("air_store_id", "visit_date"))
+# View(air.vis.res)
+air.vis.res %>% glimpse()
+air.vis.res.gap <- air.vis.res %>%
+  dplyr::mutate(gap=visitors-reserve_visitors,
+                gap_ratio=gap/reserve_visitors)
+hist(air.vis.res.gap$gap)
+# View(air.vis.res.gap)
+air_store_info %>% filter(air_store_id=="air_e7fbee4e3cfe65c5") %>% View()
 
+air.vis.res.gap.genre <- air.vis.res.gap %>% 
+  dplyr::inner_join(., air_store_info, by=c("air_store_id"))
+air.vis.res.gap.genre %>% View()
+
+air.vis.res.gap.genre.dinfo <- air.vis.res.gap.genre %>% 
+  
 
 # weekday/holiday/preholiday/weekend/preweekend
 
