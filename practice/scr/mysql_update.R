@@ -1,5 +1,6 @@
 # csvにしてからmysqlにアップロードしたほうが早い
 library(RMySQL)
+library(logging)
 
 dbconnector <- dbConnect(MySQL(), 
                          dbname = "hoge_dev",
