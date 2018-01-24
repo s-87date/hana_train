@@ -10,7 +10,7 @@ library(tm)
 library(RISmed)
 library(visNetwork)
 
-setwd("~/Documents/Rscript/Network/")
+# setwd("~/Documents/Rscript/Network/")
 
 # search_topic <- 'Shinya Yamanaka'
 search_topic <- 'Yoshinori Yoshida'
