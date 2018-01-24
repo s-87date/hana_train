@@ -109,7 +109,7 @@ isolation5 <-
       foreach(i2 = i2.latlng, .combine = "c", .packages = "geosphere") %dopar% {
         distHaversine(c(i1$longitude,i1$latitude),c(i2$longitude,i2$latitude))
       }
-    sum(sort(dist.v)[1:5])
+    sum(sort(dist.v)[2:6])
   }
 
 # stopImplicitCluster2
