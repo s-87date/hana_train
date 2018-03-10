@@ -1,0 +1,1 @@
+This is a very simple Python script that I just wrote up to quickly get an idea of how far I was from leveling up on Playstation Network. Previously, it took manual input. Now it is using a headless browser in the form of PhantomJS with Selenium WebDriver to populate your data by scraping from PSNProfiles.
