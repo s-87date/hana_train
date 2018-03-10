@@ -26,7 +26,7 @@ res <-
       foreach(i2 = i2.temp.latlng, .combine = "c", .packages = c("geosphere")) %dopar% {
         distHaversine(c(i1$longitude,i1$latitude),c(i2$longitude,i2$latitude))
       }
-    sum(sort(dist.v)[1:5])
+    sum(sort(dist.v)[2:6])
   }
 proc.time()-t
 #### 1core ####
