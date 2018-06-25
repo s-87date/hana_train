@@ -45,6 +45,6 @@ sum(is.na(train)) #0
 # colnames(train) <- c("ID","target",paste0("X",colnames(train[-1:-2])))
 
 t <- proc.time()
-train.rf <- randomForest(target~.-ID , train.df, mtry=832, ntree=1000)
+train.rf <- randomForest(target~.-ID , train, mtry=832, ntree=1000)
 proc.time() - t
 
