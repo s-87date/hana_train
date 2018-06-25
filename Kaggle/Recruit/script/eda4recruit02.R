@@ -1,4 +1,5 @@
 setwd("~/work/hana_train/Kaggle/Recruit/script")
+
 list.files()
 
 #=== library ===
