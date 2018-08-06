@@ -1,5 +1,4 @@
 # install.packages("miniUI")
-library(utils)
 library(miniUI)
 tubeplay <- function(url=NA, 
                      width = "560", height = "315", background = "white",
