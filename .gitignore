@@ -2,4 +2,6 @@
 *.tsv
 *.RData
 *.Rhistory
-.Rproj.user
+*.json
+*.jpg
+
