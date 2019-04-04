@@ -63,7 +63,7 @@ data.frame(ID=test$ID, target=test.pred) %>% write_csv("../output/rf_pred_01.csv
 
 ##=====rf_02=====
 t <- proc.time()
-tune.result.02 <- tuneRF(train[-1:-2], log(train$target+1), doBest = TRUE)
+tune.result.02 <- tuneRF(train[-1:-2], log1p(train$target), doBest = TRUE)
 proc.time() - t
 # mtry = 1663  OOB error = 2.129765 
 # Searching left ...
@@ -76,11 +76,11 @@ proc.time() - t
 # 9884.728      2.532   9887.875 
 
 t <- proc.time()
-train.rf.02 <- randomForest(log(target+1)~.-ID , train, mtry=1663, ntree=1000)
+train.rf.02 <- randomForest(log1p(target)~.-ID , train, mtry=1663, ntree=1000)
 proc.time() - t
 saveRDS(train.rf.02,"../model/rf_02.obj")
 
 test.pred.02 <- predict(train.rf.02, test)
-data.frame(ID=test$ID, target=test.pred.02) %>% write_csv("../output/rf_pred_02.csv")
+data.frame(ID=test$ID, target=expm1(test.pred.02)) %>% write_csv("../output/rf_pred_02.csv")
 
 
